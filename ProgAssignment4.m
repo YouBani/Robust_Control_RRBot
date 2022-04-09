@@ -26,9 +26,12 @@ Acl = [0, 0, 1, 0; 0, 0, 0, 1; -12, 0, -7, 0; 0, -12, 0, -7];
 Q = eye(4);
 P = lyap(Acl', Q);
 
+% Boundary layer
+phi = 0.006;
+
 % Simulation of the system 
 x0 = [deg2rad(200),deg2rad(125),0, 0];
-[T,X] = ode45(@(t,x) ode2linkTracking(t,x), tspan, x0);
+[T,X] = ode45(@(t,x) ode2linkTracking(t,x, K, P, phi), tspan, x0);
 % [T,X] = ode45(@ode2linkTracking, tspan, x0);
 
 q1_d = pi - (3*pi.*T.^2)/100 + (pi.*T.^3)/500;
@@ -44,7 +47,7 @@ Tau = [];
 for index = 1:length(T)
    time = T(index);
    x = X(index, :).';
-   [~,tau] = ode2linkTracking(time, x);
+   [~,tau] = ode2linkTracking(time, x, K, P, phi);
    Tau = [Tau, tau];
 end
 
