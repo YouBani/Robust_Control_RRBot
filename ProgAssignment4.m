@@ -21,11 +21,15 @@ A = [0, 0, 1, 0; 0, 0, 0, 1; 0, 0, 0, 0; 0, 0, 0, 0];
 B = [0, 0; 0, 0; 1, 0; 0, 1];
 K = place(A, B, p);
 
-rau = 2;
+% Finding Lyuapunov P matrix
+Acl = [0, 0, 1, 0; 0, 0, 0, 1; -12, 0, -7, 0; 0, -12, 0, -7];
+Q = eye(4);
+P = lyap(Acl', Q);
 
 % Simulation of the system 
 x0 = [deg2rad(200),deg2rad(125),0, 0];
 [T,X] = ode45(@(t,x) ode2linkTracking(t,x), tspan, x0);
+% [T,X] = ode45(@ode2linkTracking, tspan, x0);
 
 q1_d = pi - (3*pi.*T.^2)/100 + (pi.*T.^3)/500;
 q1dot_d = - (6*pi.*T)/100 + (3.*T.^2*pi)/500;
@@ -35,7 +39,7 @@ q2_d =  pi/2 - (3*pi.*T.^2)/200 + (pi.*T.^3)/1000;
 q2dot_d = - (6*pi.*T)/200 + (3.*T.^2*pi)/1000;
 q2ddot_d =- (6*pi)/200 + (6.*T*pi)/1000;
 
-% Calculate the torque
+% Store the torque values
 Tau = [];
 for index = 1:length(T)
    time = T(index);
