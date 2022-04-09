@@ -12,9 +12,7 @@ d = I2_nom + m2_nom*r2^2;
 Mmat= [a+2*b*cos(theta2), d+b*cos(theta2); d+b*cos(theta2), d];
 Cmat= [-b*sin(theta2)*theta2_dot, -b*sin(theta2)*(theta1_dot+theta2_dot); b*sin(theta2)*theta1_dot,0];
 Gmat= [-m1_nom*g*r1*sin(theta1)-m2_nom*g*(l1*sin(theta1)+r2*sin(theta1+theta2)); -m2_nom*g*r2*sin(theta1+theta2)];
-% Mmat= [a+2*b*cos(x(2)), d+b*cos(x(2)); d+b*cos(x(2)), d];
-% Cmat= [-b*sin(x(2))*x(4), -b*sin(x(2))*(x(3)+x(4)); b*sin(x(2))*x(3),0];
-% Gmat= [-m1*g*r1*sin(x(1))-m2*g*(l1*sin(x(1))+r2*sin(x(1)+x(2))); -m2*g*r2*sin(x(1)+x(2))];
+
 % Desired trajectories
 q1_d = pi - (3*pi*t^2)/100 + (pi*t^3)/500;
 q1dot_d = - (6*pi*t)/100 + (3*t^2*pi)/500;
@@ -24,30 +22,36 @@ q2_d =  pi/2 - (3*pi*t^2)/200 + (pi*t^3)/1000;
 q2dot_d = - (6*pi*t)/200 + (3*t^2*pi)/1000;
 q2ddot_d = - (6*pi)/200 + (6*t*pi)/1000;
 
-% Feedback linearization control 
+% Robust control 
 K = [12, 0, 7, 0; 0, 12, 0, 7];
 B = [0, 0; 0, 0; 1, 0; 0, 1];
 P = [1.2202, 0, 0.0417, 0; 0, 1.2202, 0, 0.0417; 0.0417, 0, 0.0774, 0; 0, 0.0417, 0, 0.0774];
 % P = [3.631, 3.631, 0.4167, 0.4167; 0, 0, 0, 0; 0.4167, 0.4167, 0.0595, 0.0595; 0, 0, 0, 0];
 
-x = [theta1 - q1_d; theta2 - q2_d; theta1_dot - q1dot_d; theta2_dot - q2dot_d];
-rau = 15;
+e = [theta1 - q1_d; theta2 - q2_d; theta1_dot - q1dot_d; theta2_dot - q2dot_d];
+rau = 25;
 phi = 0.006;
 
-if norm(B'*P*x) > phi
-    vr = -rau * (B'*P*x) / norm(B'*P*x);
+% vr with the boudary layer
+if norm(B'*P*e) > phi
+    vr = -rau * (B'*P*e) / norm(B'*P*e);
 else
-    vr = -rau * (B'*P*x) / phi;
+    vr = -rau * (B'*P*e) / phi;
 end
 
-% if norm(B'*P*x) > 0
-%    vr = -rau * (B'*P*x) / norm(B'*P*x);
+% vr without the boudary layer
+% if norm(B'*P*e) > 0
+%    vr = -rau * (B'*P*e) / norm(B'*P*e);
 % else
 %     vr = 0;
 % end
 
-% v = - K*x + [q1ddot_d; q2ddot_d] + vr;
-v = - K*x + [q1ddot_d; q2ddot_d];
+% virtual input with the robust inverse dynamics control
+v = - K*e + [q1ddot_d; q2ddot_d] + vr;
+
+% virtual input without the robust inverse dynamics control
+% v = - K*e + [q1ddot_d; q2ddot_d];
+
 tau = Mmat*v + Cmat*[theta1_dot; theta2_dot] + Gmat;
 
 u1 = [tau(1,1)];
