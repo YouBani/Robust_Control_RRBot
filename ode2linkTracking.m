@@ -1,4 +1,4 @@
-function [dX, tau] = ode2linkTracking(t,x)
+function [dX, tau] = ode2linkTracking(t,x, K, P, phi)
 m1_nom=0.75; m2_nom=0.75; l1=1; l2=1 ;r1=0.45; r2=0.45; g=9.81 ;I1_nom= 0.063; I2_nom= 0.063; m1=1; m2=1;I2= 0.084; I1= 0.084;
 
 dX= zeros(4,1);
@@ -22,15 +22,10 @@ q2_d =  pi/2 - (3*pi*t^2)/200 + (pi*t^3)/1000;
 q2dot_d = - (6*pi*t)/200 + (3*t^2*pi)/1000;
 q2ddot_d = - (6*pi)/200 + (6*t*pi)/1000;
 
-% Robust control 
-K = [12, 0, 7, 0; 0, 12, 0, 7];
 B = [0, 0; 0, 0; 1, 0; 0, 1];
-P = [1.2202, 0, 0.0417, 0; 0, 1.2202, 0, 0.0417; 0.0417, 0, 0.0774, 0; 0, 0.0417, 0, 0.0774];
-% P = [3.631, 3.631, 0.4167, 0.4167; 0, 0, 0, 0; 0.4167, 0.4167, 0.0595, 0.0595; 0, 0, 0, 0];
 
 e = [theta1 - q1_d; theta2 - q2_d; theta1_dot - q1dot_d; theta2_dot - q2dot_d];
 rau = 25;
-phi = 0.006;
 
 % vr with the boudary layer
 if norm(B'*P*e) > phi
